@@ -55,8 +55,11 @@ public class SearchService {
                 .filter(p -> p.getId().toLowerCase().contains(query.toLowerCase()) ||
                         p.getTitle().toLowerCase().contains(query.toLowerCase()) ||
                         p.getContent().toLowerCase().contains(query.toLowerCase()) ||
-//                        p.getTags().stream().anyMatch(tag -> tag.toLowerCase().contains(query.toLowerCase())) ||
-                        p.getDescription().toLowerCase().contains(query.toLowerCase())
+                        p.getTags().stream().anyMatch(tag -> tag.toLowerCase().contains(query.toLowerCase())) ||
+                        p.getDescription().toLowerCase().contains(query.toLowerCase()) ||
+                        p.getLinks().stream().anyMatch(link ->link.getTitle().toLowerCase().contains(query.toLowerCase()) ||
+                                link.getReporter().toLowerCase().contains(query.toLowerCase())||link.getId().toLowerCase().contains(query.toLowerCase()))
+
                 )
                 .collect(Collectors.toList());
     }
@@ -66,9 +69,9 @@ public class SearchService {
                 .filter(t -> t.getId().toLowerCase().contains(query.toLowerCase()) ||
                         t.getSummary().toLowerCase().contains(query.toLowerCase()) ||
                         t.getDescription().toLowerCase().contains(query.toLowerCase()) ||
-                        t.getReporter().toLowerCase().contains(query.toLowerCase())
-                        //t.getLabels().stream().anyMatch(label -> label.toLowerCase().contains(query.toLowerCase())
-                        )
+                        t.getReporter().toLowerCase().contains(query.toLowerCase()) ||
+                        t.getLabels().stream().anyMatch(label -> label.toLowerCase().contains(query.toLowerCase())
+                        ))
                 .collect(Collectors.toList());
     }
 

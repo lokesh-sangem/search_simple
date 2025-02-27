@@ -3,6 +3,8 @@ package com.tac.search_simple.mappers;
 import com.tac.search_simple.dto.JiraTicketDTO;
 import com.tac.search_simple.entity.JiraTicket;
 
+import java.time.ZonedDateTime;
+
 public class JiraTicketMapper {
 
     public static JiraTicketDTO toDTO(JiraTicket jiraTicket){
@@ -15,6 +17,7 @@ public class JiraTicketMapper {
              jiraTicketDTO.setReporter(jiraTicket.getReporter());
              jiraTicketDTO.setCreatedAt(jiraTicket.getCreatedAt());
              jiraTicketDTO.setUpdatedAt(jiraTicket.getUpdatedAt());
+             jiraTicketDTO.setLabels(jiraTicket.getLabels());
          }
          return jiraTicketDTO;
 
@@ -23,12 +26,13 @@ public class JiraTicketMapper {
     public static JiraTicket toEntity(JiraTicketDTO jiraTicketDTO){
         JiraTicket jiraTicket = new JiraTicket();
         if(jiraTicketDTO!=null){
-            jiraTicket.setId(jiraTicket.getId());
-            jiraTicket.setDescription(jiraTicket.getDescription());
-            jiraTicket.setSummary(jiraTicket.getSummary());
-            jiraTicket.setReporter(jiraTicket.getReporter());
-            jiraTicket.setCreatedAt(jiraTicket.getCreatedAt());
-            jiraTicket.setUpdatedAt(jiraTicket.getUpdatedAt());
+            jiraTicket.setId(jiraTicketDTO.getId());
+            jiraTicket.setDescription(jiraTicketDTO.getDescription());
+            jiraTicket.setSummary(jiraTicketDTO.getSummary());
+            jiraTicket.setReporter(jiraTicketDTO.getReporter());
+            jiraTicket.setCreatedAt(ZonedDateTime.now());
+            jiraTicket.setUpdatedAt(jiraTicketDTO.getUpdatedAt());
+            jiraTicket.setLabels(jiraTicketDTO.getLabels());
         }
         return jiraTicket;
     }

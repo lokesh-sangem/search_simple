@@ -2,6 +2,7 @@ package com.tac.search_simple.entity;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import lombok.Data;
@@ -24,7 +25,8 @@ public class JiraTicket {
     private ZonedDateTime createdAt;
     @JsonProperty("updated_at")
     private ZonedDateTime updatedAt;
-//    private List<String> labels;
+    @ElementCollection
+    private List<String> labels;
 
 }
 

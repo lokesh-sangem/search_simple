@@ -57,8 +57,4 @@ public ResponseEntity<Map<String,List<JiraTicketDTO>>> bulkUpdate(@RequestBody B
     public ResponseEntity<Map<String,List<String>>>bulkDelete(@RequestBody List<UUID>uniqueIds){
         return ResponseEntity.ok(jiraTicketService.bulkDelete(uniqueIds));
     }
-
-
-
-
 }

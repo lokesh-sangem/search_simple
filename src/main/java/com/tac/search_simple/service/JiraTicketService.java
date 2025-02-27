@@ -28,15 +28,21 @@ public class JiraTicketService {
         Map<String,JiraTicketDTO > map = new HashMap<>();
         JiraTicket result=null;
         if(jiraTicketDTO!=null) {
-            JiraTicket jiraTicket = new JiraTicket();
-            jiraTicket.setUniqueId(UUID.randomUUID());
-            jiraTicket.setId(jiraTicketDTO.getId());
-            jiraTicket.setSummary(jiraTicketDTO.getSummary());
-            jiraTicket.setDescription(jiraTicketDTO.getDescription());
-            jiraTicket.setReporter(jiraTicketDTO.getReporter());
-            jiraTicket.setCreatedAt(ZonedDateTime.now());
+//            JiraTicket jiraTicket = new JiraTicket();
+//
+//            jiraTicket.setId(jiraTicketDTO.getId());
+//            jiraTicket.setSummary(jiraTicketDTO.getSummary());
+//            jiraTicket.setDescription(jiraTicketDTO.getDescription());
+//            jiraTicket.setReporter(jiraTicketDTO.getReporter());
+//            jiraTicket.setUniqueId(UUID.randomUUID());
+//            jiraTicket.setCreatedAt(ZonedDateTime.now());
+//            jiraTicket.setLabels(jiraTicketDTO.getLabels());
+//
+//            result= jiraTicketRepo.save(jiraTicket);
+           JiraTicket jiraTicket= JiraTicketMapper.toEntity(jiraTicketDTO);
+           jiraTicket.setUniqueId(UUID.randomUUID());
+            result=jiraTicketRepo.save(jiraTicket);
 
-            result= jiraTicketRepo.save(jiraTicket);
         }
          map.put("Jira Ticket Created Successfully",JiraTicketMapper.toDTO(result));
         return map;
@@ -46,7 +52,7 @@ public class JiraTicketService {
         Map<String,JiraTicketDTO>map=new HashMap<>();
        JiraTicket result =jiraTicketRepo.findByUniqueId(uniqueId).orElseThrow(()-> new RuntimeException("Jira Ticket Not Found  with given :"+uniqueId));
        if(result!=null) {
-           map.put("Jira Ticket Found Sucessfully", JiraTicketMapper.toDTO(result));
+           map.put("Jira Ticket Found Sucessfully with id:"+result.getId(), JiraTicketMapper.toDTO(result));
        }
   return map;
    }
@@ -55,7 +61,7 @@ public class JiraTicketService {
    public Map<String,String> deleteById(UUID uniqueId){
         Map<String ,String>map=new HashMap<>();
         JiraTicket jiraTicket=jiraTicketRepo.findByUniqueId(uniqueId).orElseThrow(()->new RuntimeException("Jira Ticket Not Found with given:"+uniqueId));
-            jiraTicketRepo.deleteByUniqueId(uniqueId);
+            jiraTicketRepo.delete(jiraTicket);
             map.put("Jira Ticket Deleted Sucessfully with Id:",jiraTicket.getId());
             return map;
    }
@@ -63,23 +69,37 @@ public class JiraTicketService {
    public Map<String,JiraTicketDTO> updateById(UUID uniqueId,JiraTicketDTO jiraTicketDTO){
         Map<String,JiraTicketDTO> map= new HashMap<>();
       JiraTicket existingJiraTicket =jiraTicketRepo.findByUniqueId(uniqueId).orElseThrow(()->new RuntimeException("Jira Ticket Not Found with given:"+uniqueId));
+      boolean isUpdated=false;
        if(existingJiraTicket!=null){
 
-           if(jiraTicketDTO.getSummary()!=null&& !jiraTicketDTO.getSummary().isEmpty()){
+           if(jiraTicketDTO.getSummary()!=null&& !jiraTicketDTO.getSummary().isEmpty() && !jiraTicketDTO.getSummary().equals(existingJiraTicket.getSummary())){
                existingJiraTicket.setSummary(jiraTicketDTO.getSummary());
+               isUpdated=true;
            }
-           if(jiraTicketDTO.getDescription()!=null&& !jiraTicketDTO.getDescription().isEmpty()){
+           if(jiraTicketDTO.getDescription()!=null&& !jiraTicketDTO.getDescription().isEmpty() && !jiraTicketDTO.getDescription().equals(existingJiraTicket.getDescription())){
                existingJiraTicket.setDescription(jiraTicketDTO.getDescription());
+               isUpdated=true;
            }
-           if(jiraTicketDTO.getReporter()!=null&&!jiraTicketDTO.getReporter().isEmpty()){
+           if(jiraTicketDTO.getReporter()!=null&&!jiraTicketDTO.getReporter().isEmpty() && !jiraTicketDTO.getReporter().equals(existingJiraTicket.getReporter())){
                existingJiraTicket.setReporter(jiraTicketDTO.getReporter());
+               isUpdated=true;
            }
-           if(jiraTicketDTO.getId()!=null&&!jiraTicketDTO.getId().isEmpty()){
+           if(jiraTicketDTO.getId()!=null&&!jiraTicketDTO.getId().isEmpty() && !jiraTicketDTO.getId().equals(existingJiraTicket.getId())){
                existingJiraTicket.setId(jiraTicketDTO.getId());
+               isUpdated=true;
            }
-           existingJiraTicket.setUpdatedAt(ZonedDateTime.now());
+           if(jiraTicketDTO.getLabels()!=null && !jiraTicketDTO.getLabels().isEmpty() && !jiraTicketDTO.getLabels().equals(existingJiraTicket.getLabels())){
+               existingJiraTicket.setLabels(jiraTicketDTO.getLabels());
+               isUpdated=true;
+           }
+           if(isUpdated){
+               existingJiraTicket.setUpdatedAt(ZonedDateTime.now());
+               map.put("Jira Ticket Updated Successfully for Id:"+existingJiraTicket.getId(),JiraTicketMapper.toDTO(jiraTicketRepo.save(existingJiraTicket)));
+           }else{
+               map.put("Jira Ticket Not Updated for Id:"+existingJiraTicket.getId(),JiraTicketMapper.toDTO(existingJiraTicket));
+           }
+
        }
-       map.put("Jira Ticket Updated Successfully",JiraTicketMapper.toDTO(jiraTicketRepo.save(existingJiraTicket)));
        return map;
 
    }
@@ -87,7 +107,7 @@ public class JiraTicketService {
    public Map<String,List<JiraTicketDTO>>getAll(){
         Map<String,List<JiraTicketDTO>>map = new HashMap<>();
          List<JiraTicketDTO>jiraTicketDTOList=jiraTicketRepo.findAll().stream().map(JiraTicketMapper::toDTO).toList();
-         map.put("All Jira Tickets ",jiraTicketDTOList);
+         map.put("Fetched All Jira Tickets ",jiraTicketDTOList);
          return map;
    }
 //    @Transactional
@@ -125,12 +145,23 @@ public class JiraTicketService {
         Map<String,List<JiraTicketDTO>>map = new HashMap<>();
         List<JiraTicket>jiraTicketList=jiraTicketDTOList.stream().map(jiraTicketDTO -> {
             JiraTicket jiraTicket = new JiraTicket();
-            jiraTicket.setId(jiraTicketDTO.getId());
-            jiraTicket.setSummary(jiraTicketDTO.getSummary());
-            jiraTicket.setDescription(jiraTicketDTO.getDescription());
-            jiraTicket.setReporter(jiraTicketDTO.getReporter());
+            if(jiraTicketDTO.getId()!=null&& !jiraTicketDTO.getId().isEmpty()){
+                jiraTicket.setId(jiraTicketDTO.getId());
+            }
+            if(jiraTicketDTO.getSummary()!=null&& !jiraTicketDTO.getSummary().isEmpty()){
+                jiraTicket.setSummary(jiraTicketDTO.getSummary());
+            }
+            if(jiraTicketDTO.getDescription()!=null&& !jiraTicketDTO.getDescription().isEmpty()){
+                jiraTicket.setDescription(jiraTicketDTO.getDescription());
+            }
+            if(jiraTicketDTO.getReporter()!=null&& !jiraTicketDTO.getReporter().isEmpty()){
+                jiraTicket.setReporter(jiraTicketDTO.getReporter());
+            }
             jiraTicket.setCreatedAt(ZonedDateTime.now());
             jiraTicket.setUniqueId(UUID.randomUUID());
+            if(jiraTicketDTO.getLabels()!=null&& !jiraTicketDTO.getLabels().isEmpty()){
+                jiraTicket.setLabels(jiraTicketDTO.getLabels());
+            }
             return jiraTicket;
         }).collect(Collectors.toList());
         jiraTicketRepo.saveAll(jiraTicketList);
@@ -144,31 +175,107 @@ public class JiraTicketService {
 //        }
 //        return jiraTicketDTOList;
 //         ========
-         Map<String,List<JiraTicketDTO>> map=new HashMap<>();
+         Map<String, List<JiraTicketDTO>> map = new HashMap<>();
          List<JiraTicket> existingTickets = jiraTicketRepo.findByUniqueIds(uniqueIds);
-         if(existingTickets.size()!=jiraTicketDTOList.size()){
+
+         if (existingTickets.size() != jiraTicketDTOList.size()) {
              throw new IllegalArgumentException("Mismatch between IDs and DTO list sizes.");
          }
-         for(int i=0;i<existingTickets.size();i++){
-             JiraTicket existingJiraTicket=existingTickets.get(i);
-             JiraTicketDTO jiraTicketDTO =jiraTicketDTOList.get(i);
-             if(jiraTicketDTO.getId()!=null && !jiraTicketDTO.getId().isEmpty()){
+
+         boolean isAnyUpdated = true;
+         for (int i = 0; i < existingTickets.size(); i++) {
+             JiraTicket existingJiraTicket = existingTickets.get(i);
+             JiraTicketDTO jiraTicketDTO = jiraTicketDTOList.get(i);
+             boolean isUpdated = false;
+
+
+             if (jiraTicketDTO.getId() != null && !jiraTicketDTO.getId().isEmpty() && !jiraTicketDTO.getId().equals(existingJiraTicket.getId())) {
                  existingJiraTicket.setId(jiraTicketDTO.getId());
+                 isUpdated = true;
              }
-             if(jiraTicketDTO.getSummary()!=null&& !jiraTicketDTO.getSummary().isEmpty()){
+             if (jiraTicketDTO.getSummary() != null && !jiraTicketDTO.getSummary().isEmpty() && !jiraTicketDTO.getSummary().equals(existingJiraTicket.getSummary())) {
                  existingJiraTicket.setSummary(jiraTicketDTO.getSummary());
+                 isUpdated = true;
              }
-             if(jiraTicketDTO.getDescription()!=null&& !jiraTicketDTO.getDescription().isEmpty()){
+             if (jiraTicketDTO.getDescription() != null && !jiraTicketDTO.getDescription().isEmpty() && !jiraTicketDTO.getDescription().equals(existingJiraTicket.getDescription())) {
                  existingJiraTicket.setDescription(jiraTicketDTO.getDescription());
+                 isUpdated = true;
              }
-             if(jiraTicketDTO.getReporter()!=null&&!jiraTicketDTO.getReporter().isEmpty()){
+             if (jiraTicketDTO.getReporter() != null && !jiraTicketDTO.getReporter().isEmpty() && !jiraTicketDTO.getReporter().equals(existingJiraTicket.getReporter())) {
                  existingJiraTicket.setReporter(jiraTicketDTO.getReporter());
+                 isUpdated = true;
              }
+             if (jiraTicketDTO.getLabels() != null && !jiraTicketDTO.getLabels().equals(existingJiraTicket.getLabels())) {
+                 existingJiraTicket.setLabels(jiraTicketDTO.getLabels());
+                 isUpdated = true;
+             }
+
+             if (isUpdated) {
                  existingJiraTicket.setUpdatedAt(ZonedDateTime.now());
+             }else{
+                 isAnyUpdated=false;
+             }
          }
-         jiraTicketRepo.saveAll(existingTickets);
-         map.put("All Jira Tickets Updated Successfully",existingTickets.stream().map(JiraTicketMapper::toDTO).toList());
-       return map;
+
+         if (isAnyUpdated) {
+             jiraTicketRepo.saveAll(existingTickets);
+             map.put("All Jira Tickets Updated Successfully", existingTickets.stream().map(JiraTicketMapper::toDTO).toList());
+         } else {
+             map.put("No Jira Tickets Updated Make Sure That All Tickets Should be Updated", existingTickets.stream().map(JiraTicketMapper::toDTO).toList());
+         }
+
+         return map;
     }
+
+//    =====
+//@Transactional
+//public Map<String,List<JiraTicketDTO>> bulkUpdate(List<JiraTicketDTO> jiraTicketDTOList, List<UUID> uniqueIds) {
+////        for(int i=0;i<uniqueIds.size();i++){
+////            updateById(uniqueIds.get(i),jiraTicketDTOList.get(i));
+////        }
+////        return jiraTicketDTOList;
+////         ========
+//    Map<String,List<JiraTicketDTO>> map=new HashMap<>();
+//    List<JiraTicket> existingTickets = jiraTicketRepo.findByUniqueIds(uniqueIds);
+//    if(existingTickets.size()!=jiraTicketDTOList.size()){
+//        throw new IllegalArgumentException("Mismatch between IDs and DTO list sizes.");
+//    }
+//    boolean isUpdated=false;
+//    for(int i=0;i<existingTickets.size();i++){
+//        JiraTicket existingJiraTicket=existingTickets.get(i);
+//        JiraTicketDTO jiraTicketDTO =jiraTicketDTOList.get(i);
+//        if(jiraTicketDTO.getId()!=null && !jiraTicketDTO.getId().isEmpty() && !jiraTicketDTO.getId().equals(existingJiraTicket.getId())){
+//            existingJiraTicket.setId(jiraTicketDTO.getId());
+//            isUpdated=true;
+//        }
+//        if(jiraTicketDTO.getSummary()!=null&& !jiraTicketDTO.getSummary().isEmpty() && !jiraTicketDTO.getSummary().equals(existingJiraTicket.getSummary())){
+//            existingJiraTicket.setSummary(jiraTicketDTO.getSummary());
+//            isUpdated=true;
+//        }
+//        if(jiraTicketDTO.getDescription()!=null&& !jiraTicketDTO.getDescription().isEmpty() &&!jiraTicketDTO.getDescription().equals(existingJiraTicket.getDescription())){
+//            existingJiraTicket.setDescription(jiraTicketDTO.getDescription());
+//            isUpdated=true;
+//        }
+//        if(jiraTicketDTO.getReporter()!=null&&!jiraTicketDTO.getReporter().isEmpty()&& !jiraTicketDTO.getReporter().equals(existingJiraTicket.getReporter())){
+//            existingJiraTicket.setReporter(jiraTicketDTO.getReporter());
+//            isUpdated=true;
+//        }
+//        if(jiraTicketDTO.getLabels()!=null&&!jiraTicketDTO.getLabels().isEmpty() && !jiraTicketDTO.getLabels().equals(existingJiraTicket.getLabels())){
+//            existingJiraTicket.setLabels(jiraTicketDTO.getLabels());
+//            isUpdated=true;
+//        }
+//        if(isUpdated){
+//            existingJiraTicket.setUpdatedAt(ZonedDateTime.now());
+//            jiraTicketRepo.saveAll(existingTickets);
+//            map.put("All Jira Tickets Updated Successfully",existingTickets.stream().map(JiraTicketMapper::toDTO).toList());
+//        }else{
+//            map.put("All Jira Tickets Not Updated Plz Update Some Fields",existingTickets.stream().map(JiraTicketMapper::toDTO).toList());
+//        }
+//
+//    }
+//
+//    return map;
+//}
+
 
 }

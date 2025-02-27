@@ -1,6 +1,7 @@
 package com.tac.search_simple.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.Column;
 import lombok.Data;
 
 import java.time.ZonedDateTime;
@@ -9,7 +10,6 @@ import java.util.UUID;
 
 @Data
 public class JiraTicketDTO {
-
         private String id;
         private String summary;
         private String description;
@@ -18,5 +18,6 @@ public class JiraTicketDTO {
         private ZonedDateTime createdAt;
         @JsonProperty("updated_at")
         private ZonedDateTime updatedAt;
+        private List<String>labels;
 }
 

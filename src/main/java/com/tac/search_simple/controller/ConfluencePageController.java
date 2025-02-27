@@ -3,8 +3,10 @@ package com.tac.search_simple.controller;
 import com.tac.search_simple.dto.BulkUpdateRequestConfluence;
 import com.tac.search_simple.dto.ConfluencePageDTO;
 import com.tac.search_simple.service.ConfluencePageService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,13 +16,14 @@ import java.util.UUID;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/confluence")
+@Validated
 public class ConfluencePageController {
 
     private final ConfluencePageService confluencePageService;
 
 
     @PostMapping("/create")
-    public ResponseEntity<Map<String,ConfluencePageDTO>> create(@RequestBody ConfluencePageDTO confluencePageDTO) {
+    public ResponseEntity<Map<String,ConfluencePageDTO>> create(@RequestBody @Valid ConfluencePageDTO confluencePageDTO) {
         return ResponseEntity.ok(confluencePageService.create(confluencePageDTO));
     }
 //    @PostMapping("/bulk-create")
@@ -39,7 +42,7 @@ public class ConfluencePageController {
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<Map<String,ConfluencePageDTO>> updateById(@PathVariable("id") UUID uniqueId, @RequestBody ConfluencePageDTO updatedDTO) {
+    public ResponseEntity<Map<String,ConfluencePageDTO>> updateById(@PathVariable("id") UUID uniqueId, @RequestBody @Valid ConfluencePageDTO updatedDTO) {
         return ResponseEntity.ok(confluencePageService.updateById(uniqueId, updatedDTO));
     }
 
