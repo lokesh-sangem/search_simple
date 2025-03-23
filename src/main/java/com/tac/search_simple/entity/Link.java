@@ -7,9 +7,28 @@ import java.util.UUID;
 
 @Entity
 @Data
+@Table(name="confluence_page_links")
 public class Link {
-  @Id
-  @GeneratedValue(strategy= GenerationType.IDENTITY)
+    @Id
     private UUID linkId;
-  @Column()
+  @Column(nullable =false)
+  private String type;
+  @Column(nullable=false)
+  private String id;
+//  private String linkReferenceId;
+  @Column(nullable=false)
+  private String title;
+  @Column(nullable =false)
+  private String reporter;
+  @ManyToOne
+  @JoinColumn(name = "confluence_page_data_unique_id", nullable = false)
+  private ConfluencePage confluencePage;
+//  @PrePersist
+//  public void generateId() {
+//    if (this.linkId == null) {
+//      this.linkId = UUID.randomUUID();
+//    }
+//  }
 }
+
+

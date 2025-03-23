@@ -23,4 +23,6 @@ public interface ConfluencePageRepo extends JpaRepository<ConfluencePage, UUID> 
     void deleteByUniqueId(@Param("uniqueId")UUID uniqueId);
     @Query(value="SELECT * FROM confluence_page_data WHERE unique_id IN (:uniqueIds)",nativeQuery = true)
     List<ConfluencePage> findByUniqueIds(@Param("uniqueIds") List<UUID> uniqueIds);
+
+    Optional<ConfluencePage>findById(String id);
 }
